@@ -7,28 +7,32 @@ from loguru import logger
 
 
 @dataclass
-class Part1Spec:
-    """Specification for part1."""
+class PartSpec:
+    """Specification for lily58_travel_case."""
 
-    part1_radius: float = 20
+    lily58_travel_case_radius: float = 20
 
     def __post_init__(self) -> None:
         """Post initialization checks."""
-        assert self.part1_radius > 0, "part1_radius must be positive"
+        assert self.lily58_travel_case_radius > 0, (
+            "lily58_travel_case_radius must be positive"
+        )
 
 
-def make_part1(spec: Part1Spec) -> bd.Part | bd.Compound:
-    """Create a CAD model of part1."""
+def make_lily58_travel_case(
+    spec: PartSpec,
+) -> bd.Part | bd.Compound:
+    """Create a CAD model of lily58_travel_case."""
     p = bd.Part(None)
 
-    p += bd.Cylinder(radius=spec.part1_radius, height=20)
+    p += bd.Cylinder(radius=spec.lily58_travel_case_radius, height=20)
 
     return p
 
 
 if __name__ == "__main__":
     parts = {
-        "part1": show(make_part1(Part1Spec())),
+        "lily58_travel_case": show(make_lily58_travel_case(PartSpec())),
     }
 
     logger.info("Showing CAD model(s)")
