@@ -74,6 +74,19 @@ def make_lily58_travel_case(
         amount=spec.total_keyboard_thickness,
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
 
+    # Remove entrance on left side.
+    p -= bd.Box(5, 200, spec.total_keyboard_thickness - 2).translate(
+        (-71, 0, 0)
+    )
+
+    # Remove entrance on left side (toward -Y side).
+    p -= bd.Box(
+        2 * 20,
+        200,
+        spec.total_keyboard_thickness - 2,
+        align=(bd.Align.CENTER, bd.Align.MAX, bd.Align.CENTER),
+    ).translate((-71, 0, 0))
+
     return p
 
 
