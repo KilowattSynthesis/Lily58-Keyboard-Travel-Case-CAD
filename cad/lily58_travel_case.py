@@ -16,6 +16,8 @@ class PartSpec:
     # Total thickness of both halves of the keyboard together.
     total_keyboard_thickness: float = 40.0
 
+    left_edge_lip_height: float = 2
+
     input_pcb_cad_path: Path = (
         Path(__file__).parent / "inputs/Lily58_PCB_Edge_Only.step"
     )
@@ -74,18 +76,31 @@ def make_lily58_travel_case(
         amount=spec.total_keyboard_thickness,
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
 
+    left_wall_x_pos = -71
+
     # Remove entrance on left side.
-    p -= bd.Box(5, 200, spec.total_keyboard_thickness - 2).translate(
-        (-71, 0, 0)
-    )
+    p -= bd.Box(
+        5, 200, spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height
+    ).translate((left_wall_x_pos, 0, 0))
 
     # Remove entrance on left side (toward -Y side).
     p -= bd.Box(
         2 * 20,
         200,
-        spec.total_keyboard_thickness - 2,
+        spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height,
         align=(bd.Align.CENTER, bd.Align.MAX, bd.Align.CENTER),
-    ).translate((-71, 0, 0))
+    ).translate((left_wall_x_pos, 0, 0))
+
+    # Remove spot on back wall for place for wire bit.
+    p -= bd.Box(
+        2 * 15,
+        200,
+        spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height,
+        align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
+    ).translate((left_wall_x_pos, 0, 0))
+
+    # Add an "oops it's stuck" push-out cutout on the right.
+    p -= bd.Box(300, 15, spec.total_keyboard_thickness)
 
     return p
 
