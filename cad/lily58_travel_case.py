@@ -12,9 +12,10 @@ class PartSpec:
 
     plane_wall_thickness: float = 2
     edge_wall_thickness: float = 2
+    internal_clearance: float = 0.8
 
     # Total thickness of both halves of the keyboard together.
-    total_keyboard_thickness: float = 40.0
+    total_keyboard_thickness: float = 34.0
 
     left_edge_lip_height: float = 2
 
@@ -27,7 +28,7 @@ class PartSpec:
         assert self.input_pcb_cad_path.is_file()
 
 
-def get_pcb_outline(step_path: Path) -> bd.Curve:
+def _get_pcb_outline(step_path: Path) -> bd.Curve:
     """Load the PCB outline."""
     model = bd.Part(None) + bd.import_step(step_path)
 
@@ -51,8 +52,7 @@ def make_lily58_travel_case(
     """Create a CAD model of lily58_travel_case."""
     p = bd.Part(None)
 
-    pcb_outline = get_pcb_outline(spec.input_pcb_cad_path)
-    # show(pcb_outline)
+    pcb_outline = _get_pcb_outline(spec.input_pcb_cad_path)
 
     pcb_outline_edges = bd.make_face(
         bd.trace(
@@ -61,8 +61,13 @@ def make_lily58_travel_case(
         ).edges()
     )
 
+    inside_outline = bd.offset(
+        pcb_outline_edges, amount=spec.internal_clearance
+    )
+    assert isinstance(inside_outline, bd.Sketch)  # Type checking.
     outside_outline = bd.offset(
-        pcb_outline_edges, amount=spec.edge_wall_thickness
+        pcb_outline_edges,
+        amount=(spec.internal_clearance + spec.edge_wall_thickness),
     )
     assert isinstance(outside_outline, bd.Sketch)  # Type checking.
 
@@ -72,7 +77,7 @@ def make_lily58_travel_case(
     ).translate(
         (0, 0, -spec.total_keyboard_thickness / 2 - spec.plane_wall_thickness)
     ) - bd.extrude(
-        pcb_outline_edges,
+        inside_outline,
         amount=spec.total_keyboard_thickness,
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
 
