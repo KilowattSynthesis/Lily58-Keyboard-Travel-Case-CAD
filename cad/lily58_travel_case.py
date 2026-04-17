@@ -1,18 +1,21 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal, assert_never
 
 import build123d as bd
 from build123d_ease import show
 from loguru import logger
 
 
-@dataclass
+@dataclass(frozen=True)
 class PartSpec:
     """Specification for lily58_travel_case."""
 
+    keep_side: Literal["top", "bottom", "unit"]
+
     plane_wall_thickness: float = 2
     edge_wall_thickness: float = 2
-    internal_clearance: float = 0.8
+    internal_clearance: float = 0.8  # Inset from walls (XY).
 
     # Total thickness of both halves of the keyboard together.
     total_keyboard_thickness: float = 34.0
@@ -26,6 +29,11 @@ class PartSpec:
     def __post_init__(self) -> None:
         """Post initialization checks."""
         assert self.input_pcb_cad_path.is_file()
+
+    @property
+    def total_height_z(self) -> float:
+        """Total height of both sides of the enclosure in Z."""
+        return self.plane_wall_thickness * 2 + self.total_keyboard_thickness
 
 
 def _get_pcb_outline(step_path: Path) -> bd.Curve:
@@ -82,30 +90,36 @@ def make_lily58_travel_case(
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
 
     left_wall_x_pos = -71
-
-    # Remove entrance on left side.
-    p -= bd.Box(
-        5, 200, spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height
-    ).translate((left_wall_x_pos, 0, 0))
-
-    # Remove entrance on left side (toward -Y side).
-    p -= bd.Box(
-        2 * 20,
-        200,
-        spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height,
-        align=(bd.Align.CENTER, bd.Align.MAX, bd.Align.CENTER),
-    ).translate((left_wall_x_pos, 0, 0))
+    back_wall_y_pos = 50
 
     # Remove spot on back wall for place for wire bit.
-    p -= bd.Box(
+    p -= bd.Pos(Y=back_wall_y_pos) * bd.Box(
         2 * 15,
         200,
         spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height,
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
     ).translate((left_wall_x_pos, 0, 0))
 
-    # Add an "oops it's stuck" push-out cutout on the right.
-    p -= bd.Box(300, 15, spec.total_keyboard_thickness)
+    # Remove top or bottom half.
+    match spec.keep_side:
+        case "top":
+            p -= bd.Box(
+                500,
+                500,
+                100,
+                align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MAX),
+            )
+        case "bottom":
+            p -= bd.Box(
+                1000,
+                1000,
+                100,
+                align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN),
+            )
+        case "unit":
+            pass
+        case _:
+            assert_never(spec.keep_side)
 
     return p
 
@@ -113,7 +127,12 @@ def make_lily58_travel_case(
 if __name__ == "__main__":
     parts = {
         # "pcb_outline": show(get_pcb_outline(PartSpec().input_pcb_cad_path)),
-        "lily58_travel_case": show(make_lily58_travel_case(PartSpec())),
+        "lily58_travel_case_top": show(
+            make_lily58_travel_case(PartSpec("top"))
+        ),
+        "lily58_travel_case_bottom": (
+            make_lily58_travel_case(PartSpec("bottom"))
+        ),
     }
 
     logger.info("Showing CAD model(s)")
