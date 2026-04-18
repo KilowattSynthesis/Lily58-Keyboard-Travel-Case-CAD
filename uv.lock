@@ -49,7 +49,7 @@ wheels = [
 
 [[package]]
 name = "build123d"
-version = "0.9.0"
+version = "0.9.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anytree" },
@@ -63,22 +63,22 @@ dependencies = [
     { name = "trianglesolver" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0e/26/fe1c84ccd19742c4486497fc4773f3a2781bf9f08661db343eabdca1edf3/build123d-0.9.0.tar.gz", hash = "sha256:57c2e91bad7e362ef12bef8669f42713f6f7997389122d4c9d68fd79f73426ff", size = 17083646, upload-time = "2025-02-04T18:20:45.516Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/88/da/7e8b15b9daaa86e2fb98784f5f7b409c294aca9a4edb6d09b9004ea6cc8b/build123d-0.9.1.tar.gz", hash = "sha256:8bc179cb65c7e7393191ad7113f13781fabf75892be07060f2bebf95369c093b", size = 17091674, upload-time = "2025-02-14T16:53:01.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/43/a2/e5744dcd07d188586e4561391e29247ea681f0fa34af9c4b706aca819347/build123d-0.9.0-py3-none-any.whl", hash = "sha256:0213daaf4bd58e170c3c5d7654391bac9992854ddca71c7e1ed99f8cc7d62797", size = 229339, upload-time = "2025-02-04T18:20:42.134Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/f1/9adca2cf75b23c0678bd0460ec0386c9ccf32fe65f29d8ecaa4474905749/build123d-0.9.1-py3-none-any.whl", hash = "sha256:0e2a3c171d7db55329201438a95ab888df6c1b0fd13067a3780efcc8fbe1cc78", size = 232957, upload-time = "2025-02-14T16:52:58.311Z" },
 ]
 
 [[package]]
 name = "build123d-ease"
-version = "0.2.0.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build123d" },
     { name = "ocp-vscode" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/ae/20fc43b0e0aa7242e555ee8f475d8e09c31119db780be5c40c63d3425d22/build123d_ease-0.2.0.0.tar.gz", hash = "sha256:6cd0fe220311404b3088a411e1b00f6e721fb2fe639a0701f5645ae6cb783fb4", size = 6002, upload-time = "2024-11-28T10:22:13.657Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/67/f1/9fab2241ebae15ba52e0756359b9d27179b35cc88140f4133891149f41ca/build123d_ease-0.2.1.tar.gz", hash = "sha256:fe224449652478153b68ab016691eb7af56493d735772a733d4cb71eb9810cf0", size = 132265, upload-time = "2026-04-18T18:51:03.785Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/4a/f68f0cbc211257c2bed0ed1677e036ca54da53619c977c3956a965d2ef23/build123d_ease-0.2.0.0-py3-none-any.whl", hash = "sha256:1bee61f18dbb7b9e1882252e03e32cb9c43760676f1e7a29e5a73e79d0a59169", size = 4922, upload-time = "2024-11-28T10:22:12.425Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/c4/f685addd1d2c5968b31c93cd524ebcfca8cbe909a76c288a941c3b71b8a8/build123d_ease-0.2.1-py3-none-any.whl", hash = "sha256:1038ce59ff71644db0fc4d03b6dbdd03fa2fb39391823101ae8ee45f2d2dd42e", size = 5986, upload-time = "2026-04-18T18:51:02.618Z" },
 ]
 
 [[package]]
@@ -92,7 +92,7 @@ wheels = [
 
 [[package]]
 name = "cad"
-version = "0.0.0"
+version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "bd-warehouse" },
@@ -113,8 +113,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "bd-warehouse", git = "https://github.com/gumyr/bd_warehouse?rev=b7e0dbe87e76244282651e903f6f55257a298219" },
-    { name = "build123d", specifier = "==0.9.0" },
-    { name = "build123d-ease", specifier = "==0.2.0.0" },
+    { name = "build123d", specifier = "==0.9.1" },
+    { name = "build123d-ease", specifier = "==0.2.1" },
     { name = "gggears", git = "https://github.com/GarryBGoode/gggears.git" },
     { name = "gitpython" },
     { name = "loguru" },
