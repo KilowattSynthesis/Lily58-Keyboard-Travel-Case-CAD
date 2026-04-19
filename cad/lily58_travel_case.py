@@ -177,9 +177,9 @@ def make_lily58_travel_case(
     # Remove spot on back wall for place for wire bit.
     # Note: Must come after adding magnet bosses.
     left_wall_x_pos = -71
-    back_wall_y_pos = 50
+    back_wall_y_pos = 37.8
     p -= bd.Pos(Y=back_wall_y_pos) * bd.Box(
-        2 * 15,
+        2 * 34.5,
         200,
         spec.total_keyboard_thickness,
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
@@ -218,7 +218,7 @@ def render_both_halves() -> bd.Compound:
 if __name__ == "__main__":
     parts = {
         # "pcb_outline": show(get_pcb_outline(PartSpec().input_pcb_cad_path)),
-        "lily58_travel_case_right": (  # Best half for development/design.
+        "lily58_travel_case_right": show(  # Best half for development/design.
             make_lily58_travel_case(PartSpec("right"))
         ),
         "lily58_travel_case_left": (make_lily58_travel_case(PartSpec("left"))),
