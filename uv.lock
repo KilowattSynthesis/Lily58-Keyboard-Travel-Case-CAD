@@ -70,15 +70,15 @@ wheels = [
 
 [[package]]
 name = "build123d-ease"
-version = "0.2.1"
+version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "build123d" },
     { name = "ocp-vscode" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/67/f1/9fab2241ebae15ba52e0756359b9d27179b35cc88140f4133891149f41ca/build123d_ease-0.2.1.tar.gz", hash = "sha256:fe224449652478153b68ab016691eb7af56493d735772a733d4cb71eb9810cf0", size = 132265, upload-time = "2026-04-18T18:51:03.785Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/1c/9b/11f1479402f5f24b23d5610a2ecab2e2dcbce2714773b83742fd27f0f514/build123d_ease-0.2.2.tar.gz", hash = "sha256:24bf61e259b491bf2f37ef5cb057735eaf293bf22f50b59c318e35f000989152", size = 135987, upload-time = "2026-04-19T22:55:55.957Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3a/c4/f685addd1d2c5968b31c93cd524ebcfca8cbe909a76c288a941c3b71b8a8/build123d_ease-0.2.1-py3-none-any.whl", hash = "sha256:1038ce59ff71644db0fc4d03b6dbdd03fa2fb39391823101ae8ee45f2d2dd42e", size = 5986, upload-time = "2026-04-18T18:51:02.618Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/5f/cf62c9af1525202d0ce28a6075457767e8624cd75e73b8038203328bf9d2/build123d_ease-0.2.2-py3-none-any.whl", hash = "sha256:e8f3a1d979d0a39f8fc3f0e1af41547322ed2e44f57f660fe595b70e976f65ff", size = 9679, upload-time = "2026-04-19T22:55:57.077Z" },
 ]
 
 [[package]]
@@ -114,7 +114,7 @@ dev = [
 requires-dist = [
     { name = "bd-warehouse", git = "https://github.com/gumyr/bd_warehouse?rev=b7e0dbe87e76244282651e903f6f55257a298219" },
     { name = "build123d", specifier = "==0.9.1" },
-    { name = "build123d-ease", specifier = "==0.2.1" },
+    { name = "build123d-ease" },
     { name = "gggears", git = "https://github.com/GarryBGoode/gggears.git" },
     { name = "gitpython" },
     { name = "loguru" },

@@ -3,7 +3,8 @@ from pathlib import Path
 from typing import Literal
 
 import build123d as bd
-from build123d_ease import show  # pyright: ignore[reportMissingTypeStubs]
+import build123d_ease as bde
+from build123d_ease import show
 from loguru import logger
 
 
@@ -135,7 +136,7 @@ def make_lily58_travel_case(
             x_dir=bd.Vector(0, 0, 1),  # X will be the vertical direction.
             z_dir=face.normal_at(0, 0),  # Z will point out of the face.
         )
-        box = bd.Box(
+        box = bde.RoundedBox(
             # Size in Z:
             spec.plane_wall_thickness + spec.total_keyboard_thickness / 2,
             # Size along face:
@@ -143,6 +144,8 @@ def make_lily58_travel_case(
             # Size normal to face:
             spec.magnet_od + 3.0 + 1.0,  # Add extra 1mm for tolerance.
             align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN),
+            radius=3.0,
+            edges="X",
         )
 
         magnet_hex = bd.RegularPolygon(
