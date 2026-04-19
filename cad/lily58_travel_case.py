@@ -59,7 +59,11 @@ def _get_pcb_outline(step_path: Path) -> bd.Curve:
 def make_lily58_travel_case(
     spec: PartSpec,
 ) -> bd.Part | bd.Compound:
-    """Create a CAD model of lily58_travel_case."""
+    """Create a CAD model of lily58_travel_case.
+
+    Nominally, the logic draws the right-half. If drawing the left-half, we
+    mirror everything across the XY plane.
+    """
     p = bd.Part(None)
 
     pcb_outline = _get_pcb_outline(spec.input_pcb_cad_path)
@@ -122,7 +126,7 @@ def make_lily58_travel_case(
     # Add magnets to the vertical faces.
     for face in vertical_faces:
         # Boss center: same XY as face center, but at the target magnet Z.
-        boss_center = face.center()
+        boss_center = face.center(bd.CenterOf.BOUNDING_BOX)
 
         # Build boss as a box extruded outward from the face.
         # Use a Plane so +Z of the plane = outward normal of the face.
@@ -179,18 +183,19 @@ def make_lily58_travel_case(
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
     ).translate((left_wall_x_pos, 0, 0))
 
+    if spec.side == "left":
+        p = p.mirror(mirror_plane=bd.Plane.XY)
+
     return p
 
 
 if __name__ == "__main__":
     parts = {
         # "pcb_outline": show(get_pcb_outline(PartSpec().input_pcb_cad_path)),
-        "lily58_travel_case_left": show(
-            make_lily58_travel_case(PartSpec("left"))
-        ),
-        "lily58_travel_case_right": (
+        "lily58_travel_case_right": show(
             make_lily58_travel_case(PartSpec("right"))
         ),
+        "lily58_travel_case_left": (make_lily58_travel_case(PartSpec("left"))),
     }
 
     logger.info("Showing CAD model(s)")
