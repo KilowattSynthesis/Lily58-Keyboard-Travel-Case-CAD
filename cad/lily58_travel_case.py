@@ -99,7 +99,7 @@ def make_lily58_travel_case(
 
     # Add walls around edge of keyboard.
     p += bd.extrude(
-        # wall_outline is a compound, but the extrude still works.
+        # Pyright: `wall_outline` is a compound, but the extrude still works.
         wall_outline,  # pyright: ignore[reportArgumentType]
         amount=spec.total_keyboard_thickness / 2,
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
@@ -114,6 +114,48 @@ def make_lily58_travel_case(
         spec.total_keyboard_thickness,
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
     ).translate((left_wall_x_pos, 0, 0))
+
+    # Add magnet holder pockets to vertical wall faces.
+    # A vertical face has a normal with near-zero Z component.
+    vertical_faces = [
+        f
+        for f in p.faces()
+        # Nearly horizontal normal = vertical face
+        if abs(f.normal_at(0, 0).Z) < 0.1  # noqa: PLR2004
+    ]
+    vertical_faces.sort(key=lambda f: f.area, reverse=True)  # Largest first
+    vertical_faces = [
+        f for idx, f in enumerate(vertical_faces) if idx in (0, 1, 4, 6)
+    ]
+
+    logger.info(f"Found {len(vertical_faces)} vertical wall faces for magnets")
+
+    # Add magnets to the vertical faces.
+    for face in vertical_faces:
+        # Boss center: same XY as face center, but at the target magnet Z.
+        boss_center = face.center()
+
+        # Build boss as a box extruded outward from the face.
+        # Use a Plane so +Z of the plane = outward normal of the face.
+        boss_plane = bd.Plane(
+            origin=boss_center,
+            x_dir=bd.Vector(0, 0, 1),  # X will be the vertical direction.
+            z_dir=face.normal_at(0, 0),  # Z will point out of the face.
+        )
+        boss = boss_plane * (  # pyright: ignore[reportUnknownVariableType]
+            bd.Part(None)
+            + bd.Box(
+                # Size in Z:
+                spec.plane_wall_thickness + spec.total_keyboard_thickness / 2,
+                # Size along face:
+                spec.magnet_od + 3.0 * 2,
+                # Size normal to face:
+                spec.magnet_od + 3.0,
+                align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN),
+            )
+        )
+        assert isinstance(boss, bd.Part | bd.Compound)  # Type checking.
+        p += boss
 
     return p
 
