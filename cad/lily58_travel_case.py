@@ -17,10 +17,12 @@ class PartSpec:
     edge_wall_thickness: float = 2
     internal_clearance: float = 0.8  # Inset from walls (XY).
 
-    # Total thickness of both halves of the keyboard together.
-    total_keyboard_thickness: float = 34.0
+    # Total thickness of both halves of the keyboard together, with the keys
+    # squished just a little bit.
+    total_keyboard_thickness: float = 34.0  # TODO(KilowattSynthesis): Confirm.
 
-    left_edge_lip_height: float = 2
+    magnet_od: float = 10.0
+    magnet_height: float = 2.1
 
     input_pcb_cad_path: Path = (
         Path(__file__).parent / "inputs/Lily58_PCB_Edge_Only.step"
@@ -79,14 +81,27 @@ def make_lily58_travel_case(
     )
     assert isinstance(outside_outline, bd.Sketch)  # Type checking.
 
+    wall_outline = bd.make_face(outside_outline.edges()) - bd.make_face(
+        inside_outline.edges()
+    )
+    assert isinstance(wall_outline, bd.Compound)  # Type checking.
+
+    # Add bottom plane wall.
     p += bd.extrude(
-        outside_outline,
-        amount=spec.plane_wall_thickness * 2 + spec.total_keyboard_thickness,
+        outside_outline, amount=spec.plane_wall_thickness
     ).translate(
-        (0, 0, -spec.total_keyboard_thickness / 2 - spec.plane_wall_thickness)
-    ) - bd.extrude(
-        inside_outline,
-        amount=spec.total_keyboard_thickness,
+        (
+            0,
+            0,
+            -spec.total_keyboard_thickness / 2 - spec.plane_wall_thickness,
+        )
+    )
+
+    # Add walls around edge of keyboard.
+    p += bd.extrude(
+        # wall_outline is a compound, but the extrude still works.
+        wall_outline,  # pyright: ignore[reportArgumentType]
+        amount=spec.total_keyboard_thickness / 2,
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
 
     left_wall_x_pos = -71
@@ -96,7 +111,7 @@ def make_lily58_travel_case(
     p -= bd.Pos(Y=back_wall_y_pos) * bd.Box(
         2 * 15,
         200,
-        spec.total_keyboard_thickness - 2 * spec.left_edge_lip_height,
+        spec.total_keyboard_thickness,
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
     ).translate((left_wall_x_pos, 0, 0))
 
