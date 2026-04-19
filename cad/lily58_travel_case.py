@@ -110,19 +110,19 @@ def make_lily58_travel_case(
     ).translate((0, 0, -spec.total_keyboard_thickness / 2))
 
     # Add magnet holder pockets to vertical wall faces.
-    # A vertical face has a normal with near-zero Z component.
     vertical_faces = [
         f
         for f in p.faces()
-        # Nearly horizontal normal = vertical face
+        # Nearly horizontal normal = vertical face:
         if abs(f.normal_at(0, 0).Z) < 0.1  # noqa: PLR2004
     ]
     vertical_faces.sort(key=lambda f: f.area, reverse=True)  # Largest first
     vertical_faces = [
-        f for idx, f in enumerate(vertical_faces) if idx in (0, 1, 4, 6)
+        f
+        for idx, f in enumerate(vertical_faces)
+        # Manually select the 4 target faces for magnets (nth largest faces):
+        if idx in (0, 1, 4, 6)
     ]
-
-    logger.info(f"Found {len(vertical_faces)} vertical wall faces for magnets")
 
     # Add magnets to the vertical faces.
     for face in vertical_faces:
@@ -136,7 +136,7 @@ def make_lily58_travel_case(
             x_dir=bd.Vector(0, 0, 1),  # X will be the vertical direction.
             z_dir=face.normal_at(0, 0),  # Z will point out of the face.
         )
-        box = bde.RoundedBox(
+        boss_box = bde.RoundedBox(
             # Size in Z:
             spec.plane_wall_thickness + spec.total_keyboard_thickness / 2,
             # Size along face:
@@ -154,7 +154,7 @@ def make_lily58_travel_case(
             # Radius is inscribed. Flat-to-flat = magnet_od.
             major_radius=False,
         )
-        box_face_with_magnet = box.faces().sort_by(bd.Axis.X)[-1]
+        box_face_with_magnet = boss_box.faces().sort_by(bd.Axis.X)[-1]
         magnet_hex_at_location = (  # pyright: ignore[reportUnknownVariableType]
             bd.Plane(
                 box_face_with_magnet.center(),
@@ -167,11 +167,10 @@ def make_lily58_travel_case(
             magnet_hex_at_location,  # pyright: ignore[reportArgumentType]
             amount=-spec.plane_wall_thickness,  # depth into the X face
         )
-        box -= magnet_pocket  # Cut magnet pocket out of boss.
+        boss_box -= magnet_pocket  # Cut magnet pocket out of boss.
 
-        boss = boss_plane * (  # pyright: ignore[reportUnknownVariableType]
-            box
-        )
+        boss = boss_plane * boss_box  # pyright: ignore[reportUnknownVariableType]
+
         assert isinstance(boss, bd.Part | bd.Compound)  # Type checking.
         p += boss
 
@@ -192,13 +191,38 @@ def make_lily58_travel_case(
     return p
 
 
+def render_both_halves() -> bd.Compound:
+    """Render both halves of the case."""
+    left_half = make_lily58_travel_case(PartSpec("left"))
+    right_half = make_lily58_travel_case(PartSpec("right"))
+
+    left_half = left_half.rotate(bd.Axis.Y, angle=180)
+
+    # Space between the two halves.
+    gap = 10
+
+    # Flush left half so its right edge (max.X) sits at -gap
+    left_offset = -gap - left_half.bounding_box().max.X
+    # Flush right half so its left edge (min.X) sits at +gap
+    right_offset = gap - right_half.bounding_box().min.X
+
+    p = (
+        bd.Part(None)
+        + (bd.Pos(X=left_offset) * left_half)
+        + (bd.Pos(X=right_offset) * right_half)
+    )
+
+    return p
+
+
 if __name__ == "__main__":
     parts = {
         # "pcb_outline": show(get_pcb_outline(PartSpec().input_pcb_cad_path)),
-        "lily58_travel_case_right": show(
+        "lily58_travel_case_right": (  # Best half for development/design.
             make_lily58_travel_case(PartSpec("right"))
         ),
         "lily58_travel_case_left": (make_lily58_travel_case(PartSpec("left"))),
+        "both_halves": show(render_both_halves()),
     }
 
     logger.info("Showing CAD model(s)")
