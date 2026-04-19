@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, assert_never
+from typing import Literal
 
 import build123d as bd
-from build123d_ease import show
+from build123d_ease import show  # pyright: ignore[reportMissingTypeStubs]
 from loguru import logger
 
 
@@ -11,7 +11,7 @@ from loguru import logger
 class PartSpec:
     """Specification for lily58_travel_case."""
 
-    keep_side: Literal["top", "bottom", "unit"]
+    side: Literal["left", "right"]
 
     plane_wall_thickness: float = 2
     edge_wall_thickness: float = 2
@@ -38,7 +38,7 @@ class PartSpec:
 
 def _get_pcb_outline(step_path: Path) -> bd.Curve:
     """Load the PCB outline."""
-    model = bd.Part(None) + bd.import_step(step_path)
+    model = bd.Part(None) + bd.import_step(step_path)  # pyright: ignore[reportUnknownMemberType]
 
     outline = bd.project(model.wires(), workplane=bd.Plane.XY)
 
@@ -100,38 +100,17 @@ def make_lily58_travel_case(
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
     ).translate((left_wall_x_pos, 0, 0))
 
-    # Remove top or bottom half.
-    match spec.keep_side:
-        case "top":
-            p -= bd.Box(
-                500,
-                500,
-                100,
-                align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MAX),
-            )
-        case "bottom":
-            p -= bd.Box(
-                1000,
-                1000,
-                100,
-                align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN),
-            )
-        case "unit":
-            pass
-        case _:
-            assert_never(spec.keep_side)
-
     return p
 
 
 if __name__ == "__main__":
     parts = {
         # "pcb_outline": show(get_pcb_outline(PartSpec().input_pcb_cad_path)),
-        "lily58_travel_case_top": show(
-            make_lily58_travel_case(PartSpec("top"))
+        "lily58_travel_case_left": show(
+            make_lily58_travel_case(PartSpec("left"))
         ),
-        "lily58_travel_case_bottom": (
-            make_lily58_travel_case(PartSpec("bottom"))
+        "lily58_travel_case_right": (
+            make_lily58_travel_case(PartSpec("right"))
         ),
     }
 
@@ -147,7 +126,7 @@ if __name__ == "__main__":
         if not part.is_manifold:
             logger.warning(f"Part '{name}' is not manifold")
 
-        bd.export_stl(part, str(export_folder / f"{name}.stl"))
-        bd.export_step(part, str(export_folder / f"{name}.step"))
+        bd.export_stl(part, str(export_folder / f"{name}.stl"))  # pyright: ignore[reportUnknownMemberType]
+        bd.export_step(part, str(export_folder / f"{name}.step"))  # pyright: ignore[reportUnknownMemberType]
 
     logger.info("Done saving all.")
