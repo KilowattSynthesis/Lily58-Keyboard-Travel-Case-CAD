@@ -62,7 +62,7 @@ def make_lily58_travel_case(
     """
     p = bd.Part(None)
 
-    this_side_keyboard_thickness: float = spec.total_keyboard_thickness / 2
+    this_side_keyboard_thickness: float = 7  # Hack: Set lower value.
 
     pcb_outline = _get_pcb_outline(spec.input_pcb_cad_path)
 
