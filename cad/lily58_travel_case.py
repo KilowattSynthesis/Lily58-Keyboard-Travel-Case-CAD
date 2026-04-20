@@ -20,7 +20,7 @@ class PartSpec:
 
     # Total thickness of both halves of the keyboard together, with the keys
     # squished just a little bit.
-    total_keyboard_thickness: float = 34.0  # TODO(KilowattSynthesis): Confirm.
+    total_keyboard_thickness: float = 24.0
 
     magnet_od: float = 10.0 - 0.3
     magnet_height: float = 2.1
@@ -32,11 +32,6 @@ class PartSpec:
     def __post_init__(self) -> None:
         """Post initialization checks."""
         assert self.input_pcb_cad_path.is_file()
-
-    @property
-    def total_height_z(self) -> float:
-        """Total height of both sides of the enclosure in Z."""
-        return self.plane_wall_thickness * 2 + self.total_keyboard_thickness
 
 
 def _get_pcb_outline(step_path: Path) -> bd.Curve:
@@ -66,6 +61,8 @@ def make_lily58_travel_case(
     mirror everything across the XY plane.
     """
     p = bd.Part(None)
+
+    this_side_keyboard_thickness: float = spec.total_keyboard_thickness / 2
 
     pcb_outline = _get_pcb_outline(spec.input_pcb_cad_path)
 
@@ -98,7 +95,7 @@ def make_lily58_travel_case(
         (
             0,
             0,
-            -spec.total_keyboard_thickness / 2 - spec.plane_wall_thickness,
+            -this_side_keyboard_thickness - spec.plane_wall_thickness,
         )
     )
 
@@ -106,8 +103,8 @@ def make_lily58_travel_case(
     p += bd.extrude(
         # Pyright: `wall_outline` is a compound, but the extrude still works.
         wall_outline,  # pyright: ignore[reportArgumentType]
-        amount=spec.total_keyboard_thickness / 2,
-    ).translate((0, 0, -spec.total_keyboard_thickness / 2))
+        amount=this_side_keyboard_thickness,
+    ).translate((0, 0, -this_side_keyboard_thickness))
 
     # Add magnet holder pockets to vertical wall faces.
     vertical_faces = [
@@ -138,7 +135,7 @@ def make_lily58_travel_case(
         )
         boss_box = bde.RoundedBox(
             # Size in Z:
-            spec.plane_wall_thickness + spec.total_keyboard_thickness / 2,
+            spec.plane_wall_thickness + this_side_keyboard_thickness,
             # Size along face:
             spec.magnet_od + 3.0 * 2,
             # Size normal to face:
