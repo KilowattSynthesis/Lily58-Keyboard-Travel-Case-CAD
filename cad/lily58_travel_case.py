@@ -22,8 +22,11 @@ class PartSpec:
     right_half_keyboard_thickness: float = 23.0
     left_half_keyboard_thickness: float = 4.0
 
-    magnet_od: float = 10.0 - 0.3
-    magnet_height: float = 2.1
+    magnet_od: float = 8.0 - 0.3
+    magnet_od_nominal: float = 8.0
+    magnet_height: float = 0.9
+
+    sphere_od: float = 8.0
 
     input_pcb_cad_path: Path = (
         Path(__file__).parent / "inputs/Lily58_PCB_Edge_Only.step"
@@ -174,7 +177,7 @@ def make_lily58_travel_case(
             # Size in Z:
             spec.plane_wall_thickness + this_side_keyboard_thickness,
             # Size along face:
-            spec.magnet_od + 3.0 * 2,
+            spec.magnet_od * 2 + spec.sphere_od + 3.0 * 2,
             # Size normal to face:
             spec.magnet_od + 3.0 + 1.0,  # Add extra 1mm for tolerance.
             align=(bd.Align.CENTER, bd.Align.CENTER, bd.Align.MIN),
@@ -187,36 +190,59 @@ def make_lily58_travel_case(
             side_count=6,
             # Radius is inscribed. Flat-to-flat = magnet_od.
             major_radius=False,
-        )
+        ) & bd.Circle(radius=(spec.magnet_od_nominal + 0.1) / 2)
         box_face_with_magnet = boss_box.faces().sort_by(bd.Axis.X)[-1]
+        box_face_with_magnet_plane = bd.Plane(
+            box_face_with_magnet.center(),
+            z_dir=box_face_with_magnet.normal_at(0, 0),
+        )
         magnet_hex_at_location = (  # pyright: ignore[reportUnknownVariableType]
-            bd.Plane(
-                box_face_with_magnet.center(),
-                z_dir=box_face_with_magnet.normal_at(0, 0),
-            )
-            * magnet_hex
+            box_face_with_magnet_plane * magnet_hex
         )
 
         magnet_pocket = bd.extrude(
             magnet_hex_at_location,  # pyright: ignore[reportArgumentType]
             amount=-spec.plane_wall_thickness,  # depth into the X face
         )
-        boss_box -= magnet_pocket  # Cut magnet pocket out of boss.
+        # Cut magnet pocket out of boss.
+        for side in (-1, 1):
+            boss_box -= magnet_pocket.translate(
+                (
+                    0,
+                    side
+                    * (spec.sphere_od / 2 + spec.magnet_od_nominal / 2 + 1),
+                    0,
+                )
+            )
+
+        # Add or remove sphere material.
+        if spec.side == "right":
+            boss_box += bd.Pos(box_face_with_magnet.center()) * bd.Sphere(
+                radius=spec.sphere_od / 2
+            )
+        elif spec.side == "left":
+            boss_box -= bd.Pos(box_face_with_magnet.center()) * bd.Sphere(
+                radius=spec.sphere_od / 2 + 0.1
+            )
 
         boss = boss_plane * boss_box  # pyright: ignore[reportUnknownVariableType]
 
-        assert isinstance(boss, bd.Part | bd.Compound)  # Type checking.
+        assert isinstance(  # Type checking.
+            boss, bd.Part | bd.Compound | bd.Solid
+        )
         p += boss
 
     # Remove spot on back wall for place for wire bit.
     # Note: Must come after adding magnet bosses.
     left_wall_x_pos = -71
-    back_wall_y_pos = 37.8
-    p -= bd.Pos(X=left_wall_x_pos, Y=back_wall_y_pos) * bd.Box(
-        2 * 34.5,
+    back_wall_y_pos = 48 + 3
+    p -= bd.Pos(
+        X=left_wall_x_pos, Y=back_wall_y_pos, Z=-this_side_keyboard_thickness
+    ) * bd.Box(
+        2 * 27.5,
         200,
-        this_side_keyboard_thickness,
-        align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MAX),
+        this_side_keyboard_thickness * 2,  # Arbitrary large.
+        align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MIN),
     )
 
     if spec.side == "left":
