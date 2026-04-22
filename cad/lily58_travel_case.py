@@ -16,7 +16,7 @@ class PartSpec:
 
     plane_wall_thickness: float = 2
     edge_wall_thickness: float = 2
-    internal_clearance: float = 0.8  # Inset from walls (XY).
+    internal_clearance: float = 0.5  # Inset from walls (XY).
 
     # Total thickness: 27mm.
     right_half_keyboard_thickness: float = 23.0
@@ -212,12 +212,12 @@ def make_lily58_travel_case(
     # Note: Must come after adding magnet bosses.
     left_wall_x_pos = -71
     back_wall_y_pos = 37.8
-    p -= bd.Pos(Y=back_wall_y_pos) * bd.Box(
+    p -= bd.Pos(X=left_wall_x_pos, Y=back_wall_y_pos) * bd.Box(
         2 * 34.5,
         200,
         this_side_keyboard_thickness,
-        align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
-    ).translate((left_wall_x_pos, 0, 0))
+        align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.MAX),
+    )
 
     if spec.side == "left":
         p = p.mirror(mirror_plane=bd.Plane.XY)
