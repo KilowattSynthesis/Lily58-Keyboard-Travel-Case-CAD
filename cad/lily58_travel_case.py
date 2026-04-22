@@ -18,9 +18,9 @@ class PartSpec:
     edge_wall_thickness: float = 2
     internal_clearance: float = 0.8  # Inset from walls (XY).
 
-    # Total thickness of both halves of the keyboard together, with the keys
-    # squished just a little bit.
-    total_keyboard_thickness: float = 24.0
+    # Total thickness: 27mm.
+    right_half_keyboard_thickness: float = 23.0
+    left_half_keyboard_thickness: float = 4.0
 
     magnet_od: float = 10.0 - 0.3
     magnet_height: float = 2.1
@@ -52,6 +52,34 @@ def _get_pcb_outline(step_path: Path) -> bd.Curve:
     return outline
 
 
+def deduplicate_vertical_faces(
+    vertical_faces: list[bd.Face], proximity_threshold: float = 2.0
+) -> list[bd.Face]:
+    """Keep only large faces within close proximity of others.
+
+    For faces within proximity_threshold of each other, keep only the largest.
+    Uses a greedy approach: sort by area descending, then skip any face
+    whose center is within threshold of an already-accepted face.
+    """
+    # Sort faces by area, largest first
+    sorted_faces = sorted(vertical_faces, key=lambda f: f.area, reverse=True)
+
+    accepted: list[bd.Face] = []
+    for candidate in sorted_faces:
+        candidate_center = candidate.center()
+
+        # Check if this face is too close to any already-accepted face
+        too_close = any(
+            (candidate_center - kept.center()).length <= proximity_threshold
+            for kept in accepted
+        )
+
+        if not too_close:
+            accepted.append(candidate)
+
+    return accepted
+
+
 def make_lily58_travel_case(
     spec: PartSpec,
 ) -> bd.Part | bd.Compound:
@@ -62,7 +90,11 @@ def make_lily58_travel_case(
     """
     p = bd.Part(None)
 
-    this_side_keyboard_thickness: float = spec.total_keyboard_thickness / 2
+    this_side_keyboard_thickness: float = (
+        spec.right_half_keyboard_thickness
+        if spec.side == "right"
+        else spec.left_half_keyboard_thickness
+    )
 
     pcb_outline = _get_pcb_outline(spec.input_pcb_cad_path)
 
@@ -113,12 +145,17 @@ def make_lily58_travel_case(
         # Nearly horizontal normal = vertical face:
         if abs(f.normal_at(0, 0).Z) < 0.1  # noqa: PLR2004
     ]
+    # For any that are within 2mm of another, pick the larger one.
+    vertical_faces = deduplicate_vertical_faces(
+        vertical_faces=vertical_faces,
+        proximity_threshold=spec.edge_wall_thickness + 1.0,
+    )
     vertical_faces.sort(key=lambda f: f.area, reverse=True)  # Largest first
     vertical_faces = [
         f
         for idx, f in enumerate(vertical_faces)
         # Manually select the 4 target faces for magnets (nth largest faces):
-        if idx in (0, 1, 4, 6)
+        if idx in (0, 1, 2, 3)
     ]
 
     # Add magnets to the vertical faces.
@@ -178,7 +215,7 @@ def make_lily58_travel_case(
     p -= bd.Pos(Y=back_wall_y_pos) * bd.Box(
         2 * 34.5,
         200,
-        spec.total_keyboard_thickness,
+        this_side_keyboard_thickness,
         align=(bd.Align.CENTER, bd.Align.MIN, bd.Align.CENTER),
     ).translate((left_wall_x_pos, 0, 0))
 
